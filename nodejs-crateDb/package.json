@@ -1,0 +1,35 @@
+{
+  "name": "twitter-collector-nodejs",
+  "version": "0.0.1",
+  "description": "twitter collector in Node.js",
+  "main": "twitCollector.js",
+  "scripts": {
+    "test": "true",
+    "start": "node twitCollector.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicor88/twitter-data.git"
+  },
+  "keywords": [
+    "twitter",
+    "node.js"
+  ],
+  "author": "nicor88",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nicor88/twitter-data/issues"
+  },
+  "homepage": "https://github.com/nicor88/twitter-data#readme",
+  "devDependencies": {
+    "eslint": "^3.11.0",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.7.1"
+  },
+  "dependencies": {
+    "node-crate": "^1.0.26",
+    "node-tweet-stream": "^2.0.1"
+  }
+}

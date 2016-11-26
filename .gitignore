@@ -1,0 +1,7 @@
+# root
+npm-debug.log
+.idea
+
+# nodejs-crateDb
+nodejs-crateDb/node_modules/
+nodejs-crateDb/settings/twitter.js
