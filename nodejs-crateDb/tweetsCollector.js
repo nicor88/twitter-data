@@ -2,23 +2,27 @@
 
 const TwitterStream = require('node-tweet-stream');
 const crate = require('node-crate');
-const settings = require('./settings');
+const cratePersist = require('./crate/cratePersist');
+const crateConfig = require('./settings/crateConfig');
+const twitterSettings = require('./settings/twitter');
+
+const keys = ['Referendum', 'referendum'];
 
 crate.connect('localhost', 4200);
+cratePersist.executeStatement(crateConfig.tweetsTable);
 
-// todo define a tweet table here
-const scheme = { tweets_test: { title: 'string', author: 'string' } };
-crate.create(scheme).success((res) => {
-  console.log(res);
-}).error((error) => {
-  console.log(error);
-});
-
-const stream = new TwitterStream(settings.twitterAuthSetting);
+const stream = new TwitterStream(twitterSettings.authSetting);
 
 stream.on('tweet', (tweet) => {
-  console.log(Object.keys(tweet));
-  console.log(tweet);
+  // filter just the italian twitter
+  if(tweet.lang === 'it') {
+    tweet.created_at = new Date(tweet.created_at);
+    tweet.user.created_at = new Date(tweet.user.created_at);
+    cratePersist.insertTweet('tweets_test', tweet);
+  }
 });
 
-stream.track('referendum');
+// register tracker for multiple keys
+keys.forEach((k) => {
+  stream.track(k);
+});
