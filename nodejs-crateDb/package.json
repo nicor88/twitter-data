@@ -5,7 +5,7 @@
   "main": "twitCollector.js",
   "scripts": {
     "test": "true",
-    "start": "node twitCollector.js"
+    "tracker": "node tweetsCollector.js"
   },
   "repository": {
     "type": "git",
