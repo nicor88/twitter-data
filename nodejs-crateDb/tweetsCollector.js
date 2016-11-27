@@ -21,7 +21,6 @@ stream.on('tweet', (tweet) => {
   tweet.user.created_at = new Date(tweet.user.created_at);
   const sentimentScore = analyser.classify(tweet.text);
   tweet.sentiment_tweet_score = sentimentScore;
-  console.log(sentimentScore);
   cratePersist.insertTweet('tweets_test', tweet);
 });
 
