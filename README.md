@@ -4,6 +4,7 @@ Tools to collect and analyse twitter streams
 ## Dependencies
 *   Docker
 *   Node.js
+*   npm
 
 ## Node.js tracker
 The node.js tracker save the tweets based on the specified keywords into crateDB

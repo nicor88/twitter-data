@@ -3,6 +3,7 @@ const tweetsTable = 'create table tweets_test ( ' +
     'created_at timestamp,' +
     'retweeted boolean,' +
     'source string,' +
+    'sentiment_tweet_score float,' +
     'text string index using fulltext with (analyzer = "standard"),' +
     'user object(dynamic) as ( ' +
       'id string,' +
@@ -15,6 +16,7 @@ const tweetsTable = 'create table tweets_test ( ' +
       'verified boolean' +
     ')' +
   ')';
+
 module.exports = {
   tweetsTable: tweetsTable
 };

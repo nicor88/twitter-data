@@ -15,7 +15,7 @@ const insertTweet = (tableName, tweet) => {
 
 const executeStatement = (statement) => {
   crate.execute(statement).success((res) => {
-    console.log(res);
+    console.log(statement + ' executed');
   }).error((err) => {
     console.log(err);
   });

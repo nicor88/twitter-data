@@ -21,15 +21,15 @@
     "url": "https://github.com/nicor88/twitter-data/issues"
   },
   "homepage": "https://github.com/nicor88/twitter-data#readme",
-  "devDependencies": {
+  "dependencies": {
     "eslint": "^3.11.0",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
-    "eslint-plugin-react": "^6.7.1"
-  },
-  "dependencies": {
+    "eslint-plugin-react": "^6.7.1",
     "node-crate": "^1.0.26",
-    "node-tweet-stream": "^2.0.1"
+    "node-tweet-stream": "^2.0.1",
+    "salient": "^0.2.1",
+    "sentiment": "^2.1.0"
   }
 }
