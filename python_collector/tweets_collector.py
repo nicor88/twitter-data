@@ -1,15 +1,22 @@
 """
 Class to collect tweets with specific keywords and save to crateDb
 
+Examples
+--------
+# Example
+>>> host = 'localhost:4200'
+>>> collector = TweetsCollector(host=host)
+
 """
 
 import logging
+import os
+import yaml
+import python_collector.settings
 from crate import client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-CRATE_HOST = 'localhost:4200'
 
 
 class TweetsCollector:
@@ -29,3 +36,14 @@ class TweetsCollector:
 
     def get_tweets(self):
         return self
+
+    @staticmethod
+    def config_loader():
+        settings_path = os.path.realpath(os.path.dirname(python_collector.settings.__file__))
+        configs_file = os.path.join(settings_path, 'configs.yml')
+        try:
+            with open(configs_file, 'r') as f:
+                configs = yaml.load(f)
+                return configs
+        except IOError:
+            logger.debug('No configs.yml found')

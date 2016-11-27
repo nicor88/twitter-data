@@ -2,6 +2,9 @@
 npm-debug.log
 .idea
 
-# nodejs-crateDb
+# nodejs-cratedb
 nodejs-cratedb/node_modules/
 nodejs-cratedb/settings/twitter.js
+
+# python_collector
+python_collector/settings/configs.yml
