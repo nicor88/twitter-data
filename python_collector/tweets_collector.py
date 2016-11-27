@@ -13,6 +13,7 @@ Examples
 import logging
 import os
 import yaml
+import _datetime as dt
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
@@ -107,3 +108,17 @@ class PersistTweets(StreamListener):
 
 # to stop the listener try
 # PersistTweets.running = False
+
+
+def test_insert():
+    insert_statement = """INSERT INTO tweets_test_python
+        (id, created_at, retweeted, source) VALUES (?, ?, ?, ?)"""
+    data = ('id test', dt.datetime.now(), 'false', 'source test')
+    return insert_statement, data
+
+if __name__ == "__main__":
+    crate_host = 'localhost:4200'
+    crate_connection = client.connect(crate_host)
+    crate_cursor = crate_connection.cursor()
+    statement, data = test_insert()
+    crate_cursor.execute(statement, data)
