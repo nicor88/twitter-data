@@ -110,15 +110,28 @@ class PersistTweets(StreamListener):
 # PersistTweets.running = False
 
 
-def test_insert():
+def insert_tweet():
     insert_statement = """INSERT INTO tweets_test_python
-        (id, created_at, retweeted, source) VALUES (?, ?, ?, ?)"""
-    data = ('id test', dt.datetime.now(), 'false', 'source test')
-    return insert_statement, data
+        (id,
+        created_at,
+        retweeted,
+        source,
+        text,
+        sentiment_tweet_score,
+        user)
+        VALUES (?, ?, ?, ?, ?, ?, ?)"""
+    tweet = ('id test',
+             dt.datetime.now(),
+             'false',
+             'source test',
+             'text test',
+             10.0,
+             {'id': 'test id'})
+    return insert_statement, tweet
 
 if __name__ == "__main__":
     crate_host = 'localhost:4200'
     crate_connection = client.connect(crate_host)
     crate_cursor = crate_connection.cursor()
-    statement, data = test_insert()
+    statement, data = insert_tweet()
     crate_cursor.execute(statement, data)
