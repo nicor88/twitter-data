@@ -23,3 +23,6 @@ module.exports = {
   }
 };
 </pre>
+
+## Links
+*   [node-crate](https://www.npmjs.com/package/node-crate)

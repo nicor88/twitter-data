@@ -1,0 +1,15 @@
+crate:
+  image: crate
+  ports:
+    - "4200:4200"
+    - "4300:4300"
+  #environment:
+  #  CRATE_HEAP_SIZE: 8g
+  #command: crate -Des.config=/path/to/crate.yml -Des.cluster.name=cluster
+  command: crate -Des.cluster.name=dev-cluster
+crate2:
+  image: crate
+  command: crate -Des.cluster.name=dev-cluster
+crate3:
+  image: crate
+  command: crate -Des.cluster.name=dev-cluster
