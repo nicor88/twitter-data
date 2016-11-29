@@ -4,16 +4,19 @@ Class to collect tweets with specific keywords and save to crateDb
 Examples
 --------
 # Example
->>> host = 'localhost:4200'
+>>> crate_host = 'localhost:4200'
 >>> keywords = ['referendum']
->>> collector = TweetsCollector.collect_and_save(host=host, keywords=keywords)
+>>> collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=keywords)
 
 """
 
 import logging
 import os
 import yaml
+import json
 import _datetime as dt
+from pytz import timezone
+import dateutil.parser as dateparser
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
@@ -39,14 +42,16 @@ class TweetsCollector:
         # connect to crate
         try:
             crate_connection = client.connect(self.crate_host)
+
             self.crate_cursor = crate_connection.cursor()
+            logger.info('connected to ' + self.crate_host)
         except:
             logger.info('Error connecting to ' + self.crate_host)
 
     @classmethod
-    def collect_and_save(cls, *, host, keywords):
+    def collect_and_persist(cls, *, host, keywords):
         c = cls(host=host, keywords=keywords)
-        return c.get_tweets()
+        return c.create_tweets_table().get_tweets()
 
     def get_tweets(self):
         twitter_stream = Stream(self.auth, PersistTweets(crate_cursor=self.crate_cursor))
@@ -57,8 +62,9 @@ class TweetsCollector:
         table_statement = self.tweets_table()
         try:
             self.crate_cursor.execute(table_statement)
-        except:
-            logger.error('Impossible to create the table')
+        except Exception as e:
+            logger.info(e)
+        return self
 
     @staticmethod
     def configs_loader():
@@ -99,39 +105,55 @@ class PersistTweets(StreamListener):
         self.crate_cursor = crate_cursor
 
     def on_data(self, data):
-        # todo here persist data on crate
-        print(data)
+        tweet = json.loads(data)
+        insert_statement, data_to_insert = self.insert_tweet(tweet=tweet)
+        try:
+            self.crate_cursor.execute(insert_statement, data_to_insert)
+            logger.info('tweet inserted')
+        except Exception as e:
+            logger.info(e)
 
     def on_error(self, status):
         print(status)
         return True
 
+    @staticmethod
+    def insert_tweet(*, tweet):
+        logger.info(tweet['user'])
+        user = tweet['user']
+        clean_user = {}
+        clean_user['id'] = user['id_str']
+        clean_user['description'] = user['description']
+        clean_user['followers_count'] = user['followers_count']
+        clean_user['friends_count'] = user['friends_count']
+        clean_user['location'] = user['location']
+        clean_user['statuses_count'] = user['statuses_count']
+        # TODO fix created_at
+        # clean_user['created_at'] = dateparser.parse(user['created_at'])
+
+        clean_user['verified'] = user['verified']
+        insert_statement = """INSERT INTO tweets_test_python
+            (id,
+            created_at,
+            retweeted,
+            source,
+            text,
+            user
+            )
+            VALUES (?, ?, ?, ?, ?, ?)"""
+        tweet = (tweet['id_str'],
+                 tweet['timestamp_ms'],
+                 tweet['retweeted'],
+                 tweet['source'],
+                 tweet['text'],
+                 clean_user
+                 )
+        return insert_statement, tweet
+
 # to stop the listener try
 # PersistTweets.running = False
 
-
-def insert_tweet():
-    insert_statement = """INSERT INTO tweets_test_python
-        (id,
-        created_at,
-        retweeted,
-        source,
-        text,
-        sentiment_tweet_score,
-        user)
-        VALUES (?, ?, ?, ?, ?, ?, ?)"""
-    tweet = ('id test',
-             dt.datetime.now(),
-             'false',
-             'source test',
-             'text test',
-             10.0,
-             {'id': 'test id'})
-    return insert_statement, tweet
-
 if __name__ == "__main__":
     crate_host = 'localhost:4200'
-    crate_connection = client.connect(crate_host)
-    crate_cursor = crate_connection.cursor()
-    statement, data = insert_tweet()
-    crate_cursor.execute(statement, data)
+    keywords = ['referendum']
+    collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=keywords)
