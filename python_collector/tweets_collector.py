@@ -84,6 +84,7 @@ class TweetsCollector:
                     created_at timestamp,
                     retweeted boolean,
                     source string,
+                    language string,
                     sentiment_tweet_score float,
                     text string index using fulltext with (analyzer = "standard"),
                     user object(dynamic) as (
@@ -121,15 +122,17 @@ class PersistTweets(StreamListener):
     def insert_tweet(*, tweet):
         logger.info(tweet['user'])
         user = tweet['user']
-        clean_user = {}
+        clean_user = dict()
         clean_user['id'] = user['id_str']
+        clean_user['name'] = user['name']
         clean_user['description'] = user['description']
         clean_user['followers_count'] = user['followers_count']
         clean_user['friends_count'] = user['friends_count']
         clean_user['location'] = user['location']
         clean_user['statuses_count'] = user['statuses_count']
-        # TODO fix created_at
-        # clean_user['created_at'] = dateparser.parse(user['created_at'])
+        clean_user['created_at'] = dateparser.parse(user['created_at'])
+        clean_user['created_at'] = clean_user['created_at'].replace(tzinfo=None)
+        # todo manage timezone
 
         clean_user['verified'] = user['verified']
         insert_statement = """INSERT INTO tweets_test_python
@@ -138,14 +141,16 @@ class PersistTweets(StreamListener):
             retweeted,
             source,
             text,
+            language,
             user
             )
-            VALUES (?, ?, ?, ?, ?, ?)"""
+            VALUES (?, ?, ?, ?, ?, ?, ?)"""
         tweet = (tweet['id_str'],
                  tweet['timestamp_ms'],
                  tweet['retweeted'],
                  tweet['source'],
                  tweet['text'],
+                 tweet['lang'],
                  clean_user
                  )
         return insert_statement, tweet
