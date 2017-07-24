@@ -1,18 +1,8 @@
 # twitter-data
-Tools to collect and analyse twitter streams
+Examples to collect and analyse twitter streams
 
-## Dependencies
-*   Docker
-*   Node.js
-*   npm
+# Node.js to CrateDB
+Node.js app to write twitter streams to CrateDB
 
-## Node.js tracker
-The node.js tracker save the tweets based on the specified keywords into crateDB
-To run the tracker move to nodejs-crateDb folder and run:
-<pre>
-docker-compose up
-npm run tracker
-</pre>
-
-## TODO
-*   Dockerize node.js tracker
+# Python to CrateDB
+Python app to write twitter streams to CrateDB
