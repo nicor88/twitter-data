@@ -5,7 +5,7 @@
   "main": "twitCollector.js",
   "scripts": {
     "test": "true",
-    "tracker": "node tweetsCollector.js"
+    "collect": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
     "eslint-plugin-react": "^6.7.1",
     "node-crate": "^1.0.26",
     "node-tweet-stream": "^2.0.1",
-    "salient": "^0.2.1",
-    "sentiment": "^2.1.0"
+    "salient": "^0.2.1"
   }
 }

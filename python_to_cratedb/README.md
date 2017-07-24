@@ -3,15 +3,22 @@
 ## Dependencies
 *   Anaconda/Miniconda
 *   Docker
+*   Conda env
+    <pre>
+    # create environment
+    conda env create -f conda-env.yml
+    # activate environment
+    source activate twitter-data
+    # after installing a lib remember to update the environment
+    conda env export --file conda-env.yml
+    </pre>
 
-## Conda Environment
+
+## Start App
 <pre>
-# create environment
-conda env create -f conda-env.yml
-# activate environment
+docker-compose up
 source activate twitter-data
-# after installing a lib remember to update the environment
-conda env export --file conda-env.yml
+python tweets_collector.py
 </pre>
 
 ## Example Crate Queries

@@ -20,7 +20,7 @@ import dateutil.parser as dateparser
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
-import python_collector.settings
+import python_to_cratedb.settings as settings
 
 from crate import client
 
@@ -68,7 +68,7 @@ class TweetsCollector:
 
     @staticmethod
     def configs_loader():
-        settings_path = os.path.realpath(os.path.dirname(python_collector.settings.__file__))
+        settings_path = os.path.realpath(os.path.dirname(settings.__file__))
         configs_file = os.path.join(settings_path, 'configs.yml')
         try:
             with open(configs_file, 'r') as f:
@@ -160,5 +160,5 @@ class PersistTweets(StreamListener):
 
 if __name__ == "__main__":
     crate_host = 'localhost:4200'
-    keywords = ['referendum']
+    keywords = ['aws']
     collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=keywords)
