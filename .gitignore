@@ -3,9 +3,10 @@ npm-debug.log
 .idea
 
 # nodejs-cratedb
-nodejs-cratedb/node_modules
-nodejs-cratedb/settings/twitter.js
+*/node_modules
+*/settings/twitterAuth.js
+*/npm-debug.log
 
 # python_collector
-/python_collector/settings/__pycache__
-/python_collector/settings/configs.yml
+*/settings/__pycache__
+*/settings/configs.yml
