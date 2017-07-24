@@ -9,3 +9,7 @@ crate:
 crate2:
   image: crate:1.0
   command: crate -Ccluster.name=dev-cluster -Cnetwork.host=_site_
+
+crate3:
+  image: crate:1.0
+  command: crate -Ccluster.name=dev-cluster -Cnetwork.host=_site_
