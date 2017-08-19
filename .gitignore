@@ -7,6 +7,6 @@ npm-debug.log
 */settings/twitterAuth.js
 */npm-debug.log
 
-# python_to_cratedb
-*/settings/__pycache__
-*/settings/configs.yml
+
+*/__pycache__
+*/configs.yml

@@ -21,7 +21,7 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 
-import python_to_cratedb.settings as settings
+import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
