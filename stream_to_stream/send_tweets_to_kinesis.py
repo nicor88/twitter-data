@@ -86,14 +86,15 @@ class SendTweetsToKinesis(StreamListener):
                           'followers_count', 'created_at', 'utc_offset', 'time_zone', 'lang']
             clean = {a: tweet_to_clean[a] for a in attrs}
             # clean['created_at'] = parse(tweet_to_clean['created_at']).replace(tzinfo=None)
-            clean['created_at'] = dt.datetime.fromtimestamp(int(clean['timestamp_ms'])/1000).isoformat()
+            clean['created_at'] = dt.datetime.fromtimestamp(int(clean['timestamp_ms'])/1000).isoformat() + 'Z'
             clean['user'] = {a: tweet_to_clean['user'][a] for a in user_attrs}
+            clean['user']['created_at'] = parse(clean['user']['created_at']).replace(tzinfo=None).isoformat() + 'Z'
             clean['hashtags'] = [el['text'] for el in tweet_to_clean['entities']['hashtags']]
             return clean
 
         record = __clean_tweet(tweet)
         record['name'] = name
-        record['meta'] = {'created_at': dt.datetime.now().isoformat(), 'producer': producer,
+        record['meta'] = {'created_at': dt.datetime.now().isoformat() + 'Z', 'producer': producer,
                           'keywords': ','.join(keywords)}
 
         if 'created_at' not in record.keys():
