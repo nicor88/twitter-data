@@ -1,12 +1,11 @@
 # root
 npm-debug.log
 .idea
+data
+*/__pycache__
+*/configs.yml
 
 # nodejs_to_cratedb
 */node_modules
 */settings/twitterAuth.js
 */npm-debug.log
-
-
-*/__pycache__
-*/configs.yml
