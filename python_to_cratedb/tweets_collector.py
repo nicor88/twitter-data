@@ -5,24 +5,23 @@ Examples
 --------
 # Example
 >>> crate_host = 'localhost:4200'
->>> keywords = ['referendum']
->>> collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=keywords)
+>>> filtered_keywords = ['aws']
+>>> collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=filtered_keywords)
 
 """
-
+import json
 import logging
 import os
-import yaml
-import json
-import _datetime as dt
-from pytz import timezone
-import dateutil.parser as dateparser
+
+from crate import client
+from dateutil.parser import parse
+from dateutil.tz import tzoffset
+import ruamel_yaml as yaml
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
-import python_to_cratedb.settings as settings
 
-from crate import client
+import python_to_cratedb.settings as settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,11 +41,10 @@ class TweetsCollector:
         # connect to crate
         try:
             crate_connection = client.connect(self.crate_host)
-
             self.crate_cursor = crate_connection.cursor()
-            logger.info('connected to ' + self.crate_host)
-        except:
-            logger.info('Error connecting to ' + self.crate_host)
+            logger.info(f'connected to {self.crate_host}')
+        except Exception as e:
+            logger.error(e)
 
     @classmethod
     def collect_and_persist(cls, *, host, keywords):
@@ -107,10 +105,11 @@ class PersistTweets(StreamListener):
 
     def on_data(self, data):
         tweet = json.loads(data)
+        logger.debug(tweet)
         insert_statement, data_to_insert = self.insert_tweet(tweet=tweet)
         try:
             self.crate_cursor.execute(insert_statement, data_to_insert)
-            logger.info('tweet inserted')
+            logger.info(f'tweet inserted {data_to_insert}')
         except Exception as e:
             logger.info(e)
 
@@ -120,7 +119,7 @@ class PersistTweets(StreamListener):
 
     @staticmethod
     def insert_tweet(*, tweet):
-        logger.info(tweet['user'])
+        logger.info(tweet)
         user = tweet['user']
         clean_user = dict()
         clean_user['id'] = user['id_str']
@@ -130,9 +129,9 @@ class PersistTweets(StreamListener):
         clean_user['friends_count'] = user['friends_count']
         clean_user['location'] = user['location']
         clean_user['statuses_count'] = user['statuses_count']
-        clean_user['created_at'] = dateparser.parse(user['created_at'])
+        logger.info(user['created_at'])
+        clean_user['created_at'] = parse(user['created_at'])
         clean_user['created_at'] = clean_user['created_at'].replace(tzinfo=None)
-        # todo manage timezone
 
         clean_user['verified'] = user['verified']
         insert_statement = """INSERT INTO tweets_test_python
@@ -154,11 +153,3 @@ class PersistTweets(StreamListener):
                  clean_user
                  )
         return insert_statement, tweet
-
-# to stop the listener try
-# PersistTweets.running = False
-
-if __name__ == "__main__":
-    crate_host = 'localhost:4200'
-    keywords = ['aws']
-    collector = TweetsCollector.collect_and_persist(host=crate_host, keywords=keywords)

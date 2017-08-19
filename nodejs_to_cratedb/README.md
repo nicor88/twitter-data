@@ -3,7 +3,7 @@
 ## dependencies
 *   Node.js
 *   npm
-*   Python 2.7
+*   Python 2.7 (suggested: use a conda env)
 
 ## Install
 <pre>
@@ -35,6 +35,3 @@ You can connect to the crate interface at  `localhost:4200`
 
 ## Links
 *   [node-crate](https://www.npmjs.com/package/node-crate)
-
-## TODO
-*   Dockerize Node.js App

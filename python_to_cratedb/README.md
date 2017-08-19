@@ -1,18 +1,8 @@
 # Python Tweets Collector
 
-## Dependencies
-*   Anaconda/Miniconda
-*   Docker
-*   Conda env
-    <pre>
-    # create environment
-    conda env create -f conda-env.yml
-    # activate environment
-    source activate twitter-data
-    # after installing a lib remember to update the environment
-    conda env export --file conda-env.yml
-    </pre>
-
+# Dependencies
+* Docker
+* Conda env: `twitter-data`
 
 ## Start App
 <pre>
@@ -36,6 +26,3 @@ FROM tweets_test_python
 WHERE 
     created_at >= '2016-11-01' AND created_at <= '2016-11-30'
 </pre>
-
-## TODO
-*   Dockerize Python App
