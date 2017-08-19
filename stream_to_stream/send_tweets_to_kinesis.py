@@ -1,6 +1,8 @@
 """ Send tweets from a twitter stream to Kinesis
 
->>> TweetsCollector.run(keywords=['aws'])
+Examples
+--------
+>>> TweetsCollector.run(keywords=['python'])
 
 """
 import datetime as dt
@@ -11,6 +13,7 @@ import os
 import boto3
 from botocore.client import Config
 from dateutil.parser import parse
+import pytz
 import ruamel_yaml as yaml
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -18,11 +21,11 @@ from tweepy.streaming import StreamListener
 
 import settings
 
-# setup
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 os.environ["AWS_PROFILE"] = "nicor88-aws-dev"
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('sender')
 
 
 class TweetsCollector:
@@ -78,7 +81,19 @@ class SendTweetsToKinesis(StreamListener):
         return True
 
     @staticmethod
-    def create_tweet_for_kinesis(*, tweet, name='event_name', producer='stream_to_stream', keywords):
+    def create_tweet_for_kinesis(*, tweet, name='twitter', producer='stream_to_stream', keywords):
+        def get_user_created(user_created, time_zone):
+            matched_tz = [a for a in set(pytz.all_timezones_set) if time_zone in a]
+            parsed_time = parse(user_created)
+            parsed_time = parsed_time.replace(tzinfo=None)
+            if len(matched_tz) > 0:
+                user_created_tz = pytz.timezone(matched_tz[0])
+                user_created_time = user_created_tz.localize(parsed_time, is_dst=None)
+            else:
+                user_created_time = parsed_time.isoformat()
+
+            return user_created_time
+
         def __clean_tweet(tweet_to_clean):
             attrs = ['created_at', 'lang', 'geo', 'coordinates', 'place', 'retweeted', 'source',
                      'text', 'timestamp_ms']
@@ -86,15 +101,22 @@ class SendTweetsToKinesis(StreamListener):
                           'followers_count', 'created_at', 'utc_offset', 'time_zone', 'lang']
             clean = {a: tweet_to_clean[a] for a in attrs}
             # clean['created_at'] = parse(tweet_to_clean['created_at']).replace(tzinfo=None)
-            clean['created_at'] = dt.datetime.fromtimestamp(int(clean['timestamp_ms'])/1000).isoformat() + 'Z'
+            created_at = dt.datetime.fromtimestamp(int(clean['timestamp_ms'])/1000)
+            logger.debug(f'Before utc {created_at.isoformat()}')
+            created_at = created_at.astimezone(pytz.utc)
+            logger.debug(f'Before utc {created_at.isoformat()}')
+            clean['created_at'] = created_at.isoformat()
             clean['user'] = {a: tweet_to_clean['user'][a] for a in user_attrs}
-            clean['user']['created_at'] = parse(clean['user']['created_at']).replace(tzinfo=None).isoformat() + 'Z'
+            clean['user']['created_at'] = get_user_created(clean['user']['created_at'],
+                                                           clean['user']['time_zone'])
+            logger.info(f'User created time {clean["user"]["created_at"]}')
             clean['hashtags'] = [el['text'] for el in tweet_to_clean['entities']['hashtags']]
+
             return clean
 
         record = __clean_tweet(tweet)
         record['name'] = name
-        record['meta'] = {'created_at': dt.datetime.now().isoformat() + 'Z', 'producer': producer,
+        record['meta'] = {'created_at': dt.datetime.utcnow().isoformat(), 'producer': producer,
                           'keywords': ','.join(keywords)}
 
         if 'created_at' not in record.keys():
