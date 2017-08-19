@@ -10,6 +10,7 @@ import os
 
 import boto3
 from botocore.client import Config
+from dateutil.parser import parse
 import ruamel_yaml as yaml
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -65,6 +66,7 @@ class SendTweetsToKinesis(StreamListener):
 
     def on_data(self, data):
         tweet = json.loads(data)
+        logger.info(tweet)
         tweet_to_send = self.create_tweet_for_kinesis(name='twitter', tweet=tweet,
                                                       keywords=self.keywords)
         logger.info(tweet_to_send)
@@ -77,13 +79,22 @@ class SendTweetsToKinesis(StreamListener):
 
     @staticmethod
     def create_tweet_for_kinesis(*, tweet, name='event_name', producer='stream_to_stream', keywords):
-        # assert tweet as dict
-        def __clean_tweet(tweet):
-            return tweet
+        def __clean_tweet(tweet_to_clean):
+            attrs = ['created_at', 'lang', 'retweeted','source','text', 'timestamp_ms']
+            user_attrs = ['name', 'screen_name', 'location', 'url', 'description',
+                          'followers_count', 'created_at', 'utc_offset','time_zone', 'lang']
+            clean = {a: tweet_to_clean[a] for a in attrs}
+            # clean['created_at'] = parse(tweet_to_clean['created_at']).replace(tzinfo=None)
+            clean['created_at'] = dt.datetime.fromtimestamp(int(clean['timestamp_ms'])/1000).isoformat()
+            clean['user'] = {a: tweet_to_clean['user'][a] for a in user_attrs}
+            clean['hashtags'] = [el['text'] for el in tweet_to_clean['entities']['hashtags']]
+            return clean
+
         record = __clean_tweet(tweet)
         record['name'] = name
         record['meta'] = {'created_at': dt.datetime.now().isoformat(), 'producer': producer,
                           'keywords': ','.join(keywords)}
+
         if 'created_at' not in record.keys():
             record['created_at'] = record['meta']['created_at']
 
