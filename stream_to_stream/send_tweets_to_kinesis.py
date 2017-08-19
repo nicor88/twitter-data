@@ -40,7 +40,8 @@ class TweetsCollector:
         return c.get_tweets()
 
     def get_tweets(self):
-        twitter_stream = Stream(self.auth, SendTweetsToKinesis())
+        twitter_stream = Stream(self.auth, SendTweetsToKinesis(keywords=self.keywords))
+
         twitter_stream.filter(track=self.keywords)
         return self
 
@@ -53,40 +54,46 @@ class TweetsCollector:
                 configs = yaml.load(f)
                 return configs
         except IOError:
-            logger.debug('No configs.yml found')
+            logger.error('No configs.yml found')
 
 
 class SendTweetsToKinesis(StreamListener):
-    def __init__(self, ):
+    def __init__(self, keywords):
         super(StreamListener, self).__init__()
         self.kinesis = boto3.client('kinesis', config=Config(connect_timeout=1000))
+        self.keywords = keywords
 
     def on_data(self, data):
         tweet = json.loads(data)
-        tweet_to_send = self.create_tweet_for_kinesis(tweet=tweet, name='twitter')
+        tweet_to_send = self.create_tweet_for_kinesis(name='twitter', tweet=tweet,
+                                                      keywords=self.keywords)
         logger.info(tweet_to_send)
         res = self.put_tweet_to_kinesis(stream_name='DevStreamES', tweet=tweet_to_send)
+        logger.info(res)
 
     def on_error(self, status):
         logger.error(status)
         return True
 
     @staticmethod
-    def create_tweet_for_kinesis(*, tweet, name='event_name', producer='send_tweets_to_kinesis'):
+    def create_tweet_for_kinesis(*, tweet, name='event_name', producer='stream_to_stream', keywords):
         # assert tweet as dict
-        record = tweet
+        def __clean_tweet(tweet):
+            return tweet
+        record = __clean_tweet(tweet)
         record['name'] = name
-        record['meta'] = {'created_at': dt.datetime.now().isoformat(), 'producer': producer}
+        record['meta'] = {'created_at': dt.datetime.now().isoformat(), 'producer': producer,
+                          'keywords': ','.join(keywords)}
         if 'created_at' not in record.keys():
             record['created_at'] = record['meta']['created_at']
 
         return record
 
-    def put_tweet_to_kinesis(self, *, stream_name, tweet):
+    def put_tweet_to_kinesis(self, *, stream_name, tweet, partition_key='created_at'):
         res = self.kinesis.put_record(StreamName=stream_name,
-                                 Data=json.dumps(
-                                     self.create_tweet_for_kinesis(tweet=tweet,
-                                                              name='tweets')),
-                                 PartitionKey='created_at')
-        logger.info(res)
+                                      Data=json.dumps(tweet),
+                                      PartitionKey=partition_key)
         return res
+
+if __name__ == '__main__':
+    TweetsCollector.run(keywords=['python'])
